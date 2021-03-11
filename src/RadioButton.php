@@ -104,5 +104,14 @@ class RadioButton extends Field
 
         return $this;
     }
+    
+    /**
+     * @return RadioButton
+     */
+    public function hidden()
+    {
+        $this->withMeta(['hidden' => true]);
+        return $this;
+    }
 
 }
