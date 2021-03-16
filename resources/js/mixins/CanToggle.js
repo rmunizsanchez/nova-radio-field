@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 export default {
     mounted() {
-        this.toggleEnabled = this.field.toggle && _.toArray(this.field.toggle).length;
+        this.toggleEnabled = this.field.toggle && (_.toArray(this.field.toggle).length || _.toArray(_.get(this.field,'toggle_radio', [])).length);
 
         if (this.toggleEnabled) {
             this.mapFields();
@@ -21,20 +21,19 @@ export default {
     },
     methods: {
         findFieldsWhichCanBeToggled() {
-            const fieldsToToggle = _.filter(_.uniq(
+            const fieldsToToggle = _.uniq(
                 _.flatten(
                     _.toArray(this.field.toggle)
                 )
-            ), function (o) {
-                return !_.isObject(o)});
-
+            );
             const vm = this;
+
             const fieldsInternal = _.filter(_.uniq(
                 _.flatten(
-                    _.toArray(this.field.toggle)
+                    _.toArray(this.field.toggle_radio)
                 )
             ), function (o) {
-                return _.isObject(o)}).forEach(element => {
+                return !_.isArray(o)}).forEach(element => {
                     _.forEach(element, function (value, key) {
                         _.forEach(value, function (item) {
                             _.forEach(item, function (itemValue) {
@@ -69,36 +68,31 @@ export default {
             });
         },
         calculateFieldVisibility() {
-            this.resetVisibility();
-
-            if (this.rawValue == undefined) {
-                if (this.field.hasOwnProperty('hidden')) {
-                    this.$el.classList.add('mlbz-hidden')
-                }
-            } else {
+            if (this.rawValue != undefined) {
+                this.resetVisibility();
                 const fields = this.field.toggle[this.rawValue];
+
+                (fields || []).forEach(field => {
+                    if (this.toggleFields[field]) {
+                        this.toggleFields[field].$el.classList.add('mlbz-hidden')
+                    }
+                })
+
+                const fieldsRadio = _.get(this.field,'toggle_radio', [])[this.rawValue];
                 const vm = this;
-                if (!_.isArray(fields)) {
-                    ([fields]).forEach(field => {
+                if (fieldsRadio !== undefined && !_.isArray(fieldsRadio)) {
+                    ([fieldsRadio]).forEach(field => {
                         _.forEach(field, function (value, key) {
                             _.forEach(value, function (item) {
                                 _.forEach(item, function (itemValue) {
-                                    const keyitem = key+'_'+itemValue
+                                    const keyitem = key + '_' + itemValue
                                     if (vm.toggleOptions[keyitem]) {
                                         vm.toggleOptions[keyitem].parentElement.parentElement.classList.add('mlbz-hidden')
                                     }
                                 })
 
                             })
-
                         })
-
-                    })
-                } else {
-                    (fields || []).forEach(field => {
-                        if (this.toggleFields[field]) {
-                            this.toggleFields[field].$el.classList.add('mlbz-hidden')
-                        }
                     })
                 }
             }

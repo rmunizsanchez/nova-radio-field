@@ -20,7 +20,8 @@ class RadioButton extends Field
      * @var string
      */
     public $textAlign = 'center';
-
+    
+    
     /**
      * Which value should be the default?
      *
@@ -40,9 +41,15 @@ class RadioButton extends Field
      * @param mixed $options
      * @return RadioButton
      */
-    public function options(array $options)
+    public function options($options)
     {
-        $this->withMeta(['options' => $options]);
+        if (is_array($options)) {
+            $this->withMeta(['options' => $options]);
+        }
+        
+        if (is_callable($options)) {
+            $this->withMeta(['options' => call_user_func($options)]);
+        }
 
         return $this;
     }
@@ -96,7 +103,7 @@ class RadioButton extends Field
      * ]
      *
      * @param array $fields
-     * @return RadioField
+     * @return RadioButton
      */
     public function toggle(array $fields = [])
     {
@@ -113,5 +120,16 @@ class RadioButton extends Field
         $this->withMeta(['hidden' => true]);
         return $this;
     }
-
+    
+    /**
+     * @param  array  $fields
+     *
+     * @return \OwenMelbz\RadioField\RadioButton
+     */
+    public function toggleRadio(array $fields = [])
+    {
+        $this->withMeta(['toggle_radio' => $fields]);
+    
+        return $this;
+    }
 }
