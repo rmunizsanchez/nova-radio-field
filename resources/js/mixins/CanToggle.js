@@ -16,7 +16,8 @@ export default {
         return {
             toggleEnabled: false,
             toggleFields: {},
-            toggleOptions: {}
+            toggleOptions: {},
+            recheck:{}
         }
     },
     methods: {
@@ -62,23 +63,29 @@ export default {
         resetVisibility() {
             _.each(this.toggleFields, field => {
                 field.$el.classList.remove('mlbz-hidden');
+                if (typeof field.calculateFieldVisibility !== 'undefined' && field.toggleEnabled) {
+                    this.recheck[field.field.attribute]=field;
+                }
             });
             _.each(this.toggleOptions, field => {
                 field.parentElement.parentElement.classList.remove('mlbz-hidden');
+
             });
         },
         calculateFieldVisibility() {
+            console.log(this.rawValue);
+
             if (this.rawValue != undefined) {
                 this.resetVisibility();
                 const fields = this.field.toggle[this.rawValue];
-
+                console.log(fields);
                 (fields || []).forEach(field => {
                     if (this.toggleFields[field]) {
                         this.toggleFields[field].$el.classList.add('mlbz-hidden')
                     }
                 })
 
-                const fieldsRadio = _.get(this.field,'toggle_radio', [])[this.rawValue];
+                const fieldsRadio = _.get(this.field, 'toggle_radio', [])[this.rawValue];
                 const vm = this;
                 if (fieldsRadio !== undefined && !_.isArray(fieldsRadio)) {
                     ([fieldsRadio]).forEach(field => {
@@ -93,6 +100,14 @@ export default {
 
                             })
                         })
+                    })
+                }
+                if (_.toArray(this.recheck).length > 0) {
+                    (_.toArray(this.recheck)).forEach(field => {
+                        console.log(field)
+                        if (typeof field.calculateFieldVisibility !== 'undefined' && field.toggleEnabled) {
+                            field.calculateFieldVisibility()
+                        }
                     })
                 }
             }
